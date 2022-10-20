@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.RandomDecision.Models;
+using DecisionMakerApi.Common.Domains;
 
 namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 {
@@ -50,6 +51,32 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 
             return randomDecisionItem;
         }
+
+        // GET: api/RandomDecisionItem/5/decide
+        [HttpGet("{id}/decide")]
+        public async Task<ActionResult<Choice>> GetMakeRandomDecision(long id)
+        {
+            if (_context.RandomDecisionItems == null)
+            {
+                return NotFound();
+            }
+
+            var randomDecisionItems =  await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
+
+            var randomDecisionItem = randomDecisionItems.Find(i => i.Id == id);
+
+            if (randomDecisionItem == null)
+            {
+                return NotFound();
+            }
+
+            List<Choice> ls = randomDecisionItem.Choices; 
+            if (ls.Count == 0) return new Choice();         
+            var rand = new Random();
+            int index = rand.Next(ls.Count);
+            return ls[index];
+        }
+
 
         // PUT: api/RandomDecisionItems/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
