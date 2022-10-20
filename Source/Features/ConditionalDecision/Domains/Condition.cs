@@ -4,8 +4,8 @@ public class Condition
 {
     public class InnerItem
     {
+        // TODO: Id refers to Choices key
         public long Id { get; set; }
-        public string Name { get; set; } = null!;
     }
 
     private List<InnerItem> _include = new List<InnerItem>();
