@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.WeightedDecision.Models;
+using DecisionMakerApi.Common.Domains;
 
 namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 {
@@ -28,7 +29,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
           {
               return NotFound();
           }
-            return await _context.WeightedDecisionItems.Include(ti => ti.Choices).ToListAsync();
+            return await _context.WeightedDecisionItems.Include(ti => ti.Choices).Include(ti => ti.CriteriaList).ToListAsync();
         }
 
         // GET: api/WeightedDecisionItems/5
@@ -39,7 +40,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
           {
               return NotFound();
           }
-            var weightedDecisionItems = await _context.WeightedDecisionItems.Include(ti => ti.Choices).ToListAsync();
+            var weightedDecisionItems = await _context.WeightedDecisionItems.Include(ti => ti.Choices).Include(ti => ti.CriteriaList).ToListAsync();
             
             var weightedDecisionItem = weightedDecisionItems.Find(i => i.Id == id);
             
@@ -49,6 +50,32 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             }
 
             return weightedDecisionItem;
+        }
+
+        // GET: api/WeightedDecisionItems/5/decide
+        [HttpGet("{id}/decide")]
+        public async Task<ActionResult<List<Choice>>> GetMakeWeightedDecision(long id)
+        {
+            if (_context.WeightedDecisionItems == null)
+            {
+                return NotFound();
+            }
+
+            var weightedDecisionItems =  await _context.WeightedDecisionItems.Include(ti => ti.Choices).Include(ti => ti.CriteriaList).ToListAsync();
+
+            var weightedDecisionItem = weightedDecisionItems.Find(i => i.Id == id);
+
+            if (weightedDecisionItem == null)
+            {
+                return NotFound();
+            }
+
+            List<Choice> ls = weightedDecisionItem.Choices; 
+            if (ls.Count == 0) return NotFound();      
+
+            return ls.ToList();
+            
+
         }
 
         // PUT: api/WeightedDecisionItems/5
