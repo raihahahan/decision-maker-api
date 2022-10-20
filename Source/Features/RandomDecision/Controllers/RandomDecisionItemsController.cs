@@ -71,7 +71,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             }
 
             List<Choice> ls = randomDecisionItem.Choices; 
-            if (ls.Count == 0) return new Choice();         
+            if (ls.Count == 0) return NotFound();
             var rand = new Random();
             int index = rand.Next(ls.Count);
             return ls[index];
