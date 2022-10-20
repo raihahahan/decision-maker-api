@@ -28,7 +28,7 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
           {
               return NotFound();
           }
-            return await _context.ConditionalDecisionItems.ToListAsync();
+            return await _context.ConditionalDecisionItems.Include(ti => ti.Choices).Include(ti => ti.Conditions.Include).Include(ti => ti.Conditions.Exclude).ToListAsync();
         }
 
         // GET: api/ConditionalDecisionItems/5
@@ -39,7 +39,9 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
           {
               return NotFound();
           }
-            var conditionalDecisionItem = await _context.ConditionalDecisionItems.FindAsync(id);
+            var conditionalDecisionItems = await _context.ConditionalDecisionItems.Include(ti => ti.Choices).Include(ti => ti.Conditions.Include).Include(ti => ti.Conditions.Exclude).ToListAsync();
+
+            var conditionalDecisionItem = conditionalDecisionItems.Find(i => i.Id == id);
 
             if (conditionalDecisionItem == null)
             {

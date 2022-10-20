@@ -28,7 +28,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
           {
               return NotFound();
           }
-            return await _context.WeightedDecisionItems.ToListAsync();
+            return await _context.WeightedDecisionItems.Include(ti => ti.Choices).ToListAsync();
         }
 
         // GET: api/WeightedDecisionItems/5
@@ -39,8 +39,10 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
           {
               return NotFound();
           }
-            var weightedDecisionItem = await _context.WeightedDecisionItems.FindAsync(id);
-
+            var weightedDecisionItems = await _context.WeightedDecisionItems.Include(ti => ti.Choices).ToListAsync();
+            
+            var weightedDecisionItem = weightedDecisionItems.Find(i => i.Id == id);
+            
             if (weightedDecisionItem == null)
             {
                 return NotFound();

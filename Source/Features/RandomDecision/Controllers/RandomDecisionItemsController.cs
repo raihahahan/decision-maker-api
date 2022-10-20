@@ -28,7 +28,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
           {
               return NotFound();
           }
-            return await _context.RandomDecisionItems.ToListAsync();
+            return await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
         }
 
         // GET: api/RandomDecisionItems/5
@@ -39,7 +39,9 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
           {
               return NotFound();
           }
-            var randomDecisionItem = await _context.RandomDecisionItems.FindAsync(id);
+            var randomDecisionItems = await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
+            
+            var randomDecisionItem = randomDecisionItems.Find(i => i.Id == id);
 
             if (randomDecisionItem == null)
             {
