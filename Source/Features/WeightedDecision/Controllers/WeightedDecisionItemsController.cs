@@ -92,7 +92,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             _context.WeightedDecisionItems.Add(weightedDecisionItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetWeightedDecisionItem", new { id = weightedDecisionItem.Id }, weightedDecisionItem);
+            return CreatedAtAction(nameof(GetWeightedDecisionItem), new { id = weightedDecisionItem.Id }, weightedDecisionItem);
         }
 
         // DELETE: api/WeightedDecisionItems/5

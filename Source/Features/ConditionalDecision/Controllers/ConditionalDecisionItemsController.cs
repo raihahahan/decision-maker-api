@@ -92,7 +92,7 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
             _context.ConditionalDecisionItems.Add(conditionalDecisionItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetConditionalDecisionItem", new { id = conditionalDecisionItem.Id }, conditionalDecisionItem);
+            return CreatedAtAction(nameof(GetConditionalDecisionItem), new { id = conditionalDecisionItem.Id }, conditionalDecisionItem);
         }
 
         // DELETE: api/ConditionalDecisionItems/5

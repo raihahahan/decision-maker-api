@@ -92,7 +92,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             _context.RandomDecisionItems.Add(randomDecisionItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetRandomDecisionItem", new { id = randomDecisionItem.Id }, randomDecisionItem);
+            return CreatedAtAction(nameof(GetRandomDecisionItem), new { id = randomDecisionItem.Id }, randomDecisionItem);
         }
 
         // DELETE: api/RandomDecisionItems/5
