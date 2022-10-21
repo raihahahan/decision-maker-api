@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.WeightedDecision.Models;
+using DecisionMakerApi.Features.WeightedDecision.Domains;
 using DecisionMakerApi.Common.Domains;
 
 namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
@@ -52,30 +48,27 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             return weightedDecisionItem;
         }
 
-        // GET: api/WeightedDecisionItems/5/decide
-        [HttpGet("{id}/decide")]
-        public async Task<ActionResult<List<Choice>>> GetMakeWeightedDecision(long id)
+        // POST: api/WeightedDecisionItems/5/decide
+        [HttpPost("{id}/decide")]
+        public async Task<ActionResult<List<ChosenInput>>> GetMakeWeightedDecision(long id, [FromBody] List<WeightedInput> _weightedInput)
         {
-            if (_context.WeightedDecisionItems == null)
-            {
-                return NotFound();
-            }
 
-            var weightedDecisionItems =  await _context.WeightedDecisionItems.Include(ti => ti.Choices).Include(ti => ti.CriteriaList).ToListAsync();
+            var weightedDecisionItem = await this.GetWeightedDecisionItem(id);
 
-            var weightedDecisionItem = weightedDecisionItems.Find(i => i.Id == id);
-
-            if (weightedDecisionItem == null)
-            {
-                return NotFound();
-            }
-
-            List<Choice> ls = weightedDecisionItem.Choices; 
-            if (ls.Count == 0) return NotFound();      
-
-            return ls.ToList();
+            if (weightedDecisionItem == null || weightedDecisionItem.Value == null) return NotFound();
             
+            List<Choice> choiceList = weightedDecisionItem.Value.Choices;
+            if (choiceList.Count == 0) return NotFound();  
 
+            List<ChosenInput> FinalList = _weightedInput.Select((w, index) => {
+                double totalWeight = 0;
+                w._CriteriaInput.ForEach(c => {
+                    totalWeight += c.value * c.Weight;
+                });
+                return new ChosenInput(index, w.ChoiceId, totalWeight, w.ChoiceName);
+            }).OrderByDescending(o => o.TotalWeight).ToList();
+
+            return FinalList;
         }
 
         // PUT: api/WeightedDecisionItems/5
