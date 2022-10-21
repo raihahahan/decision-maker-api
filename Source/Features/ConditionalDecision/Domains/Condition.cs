@@ -4,7 +4,7 @@ public class Condition
 {
     public class InnerItem
     {
-        // TODO: Id refers to Choices key
+        // Id refers to Choices primary key
         public long Id { get; set; }
     }
 
