@@ -50,7 +50,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 
         // POST: api/WeightedDecisionItems/5/decide
         [HttpPost("{id}/decide")]
-        public async Task<ActionResult<List<ChosenInput>>> GetMakeWeightedDecision(long id, [FromBody] List<WeightedInput> _weightedInput)
+        public async Task<ActionResult<List<WeightedResult>>> GetMakeWeightedDecision(long id, [FromBody] List<WeightedInput> _weightedInput)
         {
 
             var weightedDecisionItem = await this.GetWeightedDecisionItem(id);
@@ -60,12 +60,12 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             List<Choice> choiceList = weightedDecisionItem.Value.Choices;
             if (choiceList.Count == 0) return NotFound();  
 
-            List<ChosenInput> FinalList = _weightedInput.Select((w, index) => {
+            List<WeightedResult> FinalList = _weightedInput.Select((w, index) => {
                 double totalWeight = 0;
                 w._CriteriaInput.ForEach(c => {
                     totalWeight += c.value * c.Weight;
                 });
-                return new ChosenInput(index, w.ChoiceId, totalWeight, w.ChoiceName);
+                return new WeightedResult(index, w.ChoiceId, totalWeight, w.ChoiceName);
             }).OrderByDescending(o => o.TotalWeight).ToList();
 
             return FinalList;
