@@ -25,7 +25,10 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
           {
               return NotFound();
           }
-            return await _context.WeightedDecisionItems.Include(ti => ti.Choices).Include(ti => ti.CriteriaList).ToListAsync();
+            return await _context.WeightedDecisionItems
+                .Include(ti => ti.Choices)
+                .Include(ti => ti.CriteriaList)
+                .ToListAsync();
         }
 
         // GET: api/WeightedDecisionItems/5
