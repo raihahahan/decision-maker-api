@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Registed database context
+// Register database context
 builder.Services.AddDbContext<RandomDecisionContext>(opt =>
     opt.UseInMemoryDatabase("RandomDecisionList"));
 builder.Services.AddDbContext<ConditionalDecisionContext>(opt =>
