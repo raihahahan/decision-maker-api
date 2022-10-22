@@ -30,14 +30,11 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/raihahahan/decision-maker-api">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
 
 <h3 align="center">Decision Maker Web API</h3>
 
   <p align="center">
-    A Web API  project to help you make decisions! Contains features such as CRUD endpoints, authentication, search, pagination, filters and more.
+    An ASP.NET Web API to help you make decisions.
     <br />
     <a href="https://github.com/raihahahan/decision-maker-api"><strong>Explore the docs »</strong></a>
     <br />
@@ -49,8 +46,6 @@
     <a href="https://github.com/raihahahan/decision-maker-api/issues">Request Feature</a>
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -85,10 +80,51 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `raihahahan`, `decision-maker-api`, `twitter_handle`, `linkedin_username`, `gmail`, `mraihandev`, `Decision Maker Web API`, `A Web API  project to help you make decisions! Contains features such as CRUD endpoints, authentication, search, pagination, filters and more.`
+Decision Maker API is a Web API created with ASP.NET. It contains features such as CRUD, authentication, search, pagination, filters and more.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Features and Endpoints
+#### Random Decision
+- From a list of choices, randomly return a decision.
+
+```
+GET /api/RandomDecisionItems
+POST /api/RandomDecisionItems
+GET /api/RandomDecisionItems/{id}
+PUT /api/RandomDecisionItems/{id}
+DELETE /api/RandomDecisionItems/{id}
+GET /api/RandomDecisionItems/{id}/decide
+```
+
+#### Weighted Decision
+- From a list of choices, provide a list of criteria affecting your choice.
+- For example, for a list of cars, some criteria may be budget, convenience, specs etc.
+- Weigh how important each criteria is for each choice.
+
+```
+GET /api/WeightedDecisionItems
+POST /api/WeightedDecisionItems
+GET /api/WeightedDecisionItems/{id}
+PUT /api/WeightedDecisionItems/{id}
+DELETE /api/WeightedDecisionItems/{id}
+POST /api/WeightedDecisionItems/{id}/decide
+```
+
+#### Conditional Decision
+- From a list of choices, provide a list of conditions affecting your choice.
+- For example, for a list of commuting method (e.g. bicycle, public transport, private transport), some conditions may be "Rainy weather", "Must report to work earlier" etc. And for each condition, there are two lists, `include` and `exclude`, each containing a list of choices to include and exclude respectively if the given condition is true.
+
+```
+GET /api/ConditionalDecisionItems
+POST /api/ConditionalDecisionItems
+GET /api/ConditionalDecisionItems/{id}
+PUT /api/ConditionalDecisionItems/{id}
+DELETE /api/ConditionalDecisionItems/{id}
+POST /api/ConditionalDecisionItems/{id}/decide
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 ### Built With
@@ -104,46 +140,34 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-  ```sh
-  npm install npm@latest -g
-  ```
+You will need to install dotnet. See https://dotnet.microsoft.com/en-us/.
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Clone the repo
    ```sh
    git clone https://github.com/raihahahan/decision-maker-api.git
    ```
-3. Install NPM packages
+2. Restore the dependencies and tools of the project.
    ```sh
-   npm install
+   dotnet restore
    ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
+3. Start the project.
+   ```sh
+   dotnet run
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+TODO
 
 _For more examples, please refer to the [Documentation](https://example.com)_
 
@@ -154,15 +178,14 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [x] CRUD for each feature.
+- [ ] Unit testing.
+- [ ] Authentication to save the decisions into an account.
+- [ ] Search, filters, pagination.
 
 See the [open issues](https://github.com/raihahahan/decision-maker-api/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- CONTRIBUTING -->
@@ -191,27 +214,21 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
 <!-- CONTACT -->
 ## Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - mraihandev@gmail.com
-
-Project Link: [https://github.com/raihahahan/decision-maker-api](https://github.com/raihahahan/decision-maker-api)
+Email: mraihandev@gmail.com
+Website: https://mraihan.vercel.app
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []()
-* []()
-* []()
+* [Microsoft Learn: Create a Web API](https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-6.0&tabs=visual-studio)
+* [ReadMe template](https://github.com/othneildrew/Best-README-Template)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
