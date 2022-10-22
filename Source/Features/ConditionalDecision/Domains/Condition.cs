@@ -6,6 +6,7 @@ public class Condition
     {
         // Id refers to Choices primary key
         public long Id { get; set; }
+        public long ChoiceId { get; set; }
     }
 
     private List<InnerItem> _include = new List<InnerItem>();
