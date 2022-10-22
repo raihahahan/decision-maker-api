@@ -28,8 +28,6 @@ public class GlobalSearchController : ControllerBase
         var randomDecisions = from r in _randomCtx.RandomDecisionItems select r;
         var weightedDecisions = from w in _weightedCtx.WeightedDecisionItems select w;
         var conditionalDecisions = from c in _conditionalCtx.ConditionalDecisionItems select c;
-
-        
         
         if (randomDecisions == null || weightedDecisions == null || conditionalDecisions == null) return NotFound();
         
