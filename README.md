@@ -85,6 +85,8 @@ Decision Maker API is a Web API created with ASP.NET. It contains features such 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Features and Endpoints
+- For a much clearer overview of the schema and endpoints, go to https://localhost:7239/swagger/index.html.
+
 #### Random Decision
 - From a list of choices, randomly return a decision.
 
