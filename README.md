@@ -220,7 +220,7 @@ Website: https://mraihan.vercel.app
 [issues-shield]: https://img.shields.io/github/issues/raihahahan/decision-maker-api.svg?style=for-the-badge
 [issues-url]: https://github.com/raihahahan/decision-maker-api/issues
 [license-shield]: https://img.shields.io/github/license/raihahahan/decision-maker-api.svg?style=for-the-badge
-[license-url]: https://github.com/raihahahan/decision-maker-api/blob/master/LICENSE.txt
+[license-url]: https://github.com/raihahahan/decision-maker-api/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/muhammad-raihan-rizqullah-21b554248
 [product-screenshot]: images/screenshot.png
