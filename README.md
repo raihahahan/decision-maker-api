@@ -157,9 +157,9 @@ You will need to install dotnet. See https://dotnet.microsoft.com/en-us/.
 ## Roadmap
 
 - [x] CRUD for each feature.
+- [x] Search, filters, pagination.
 - [ ] Unit testing.
 - [ ] Authentication to save the decisions into an account.
-- [ ] Search, filters, pagination.
 
 See the [open issues](https://github.com/raihahahan/decision-maker-api/issues) for a full list of proposed features (and known issues).
 
