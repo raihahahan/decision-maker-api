@@ -23,13 +23,35 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 
         // GET: api/RandomDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems()
+        public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems(string? sortorder)
         {
           if (_context.RandomDecisionItems == null)
           {
               return NotFound();
           }
-            return await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
+
+        var decisions = _context.RandomDecisionItems
+                    .Include(ti => ti.Choices);
+
+          switch (sortorder)
+            {
+                case "name_desc":
+                    return await decisions
+                        .OrderByDescending(s => s.Name)
+                        .ToListAsync();
+                case "Date":
+                    return await decisions
+                        .OrderBy(s => s.CreatedAt)
+                        .ToListAsync();
+                case "date_desc":
+                    return await decisions
+                        .OrderByDescending(s => s.CreatedAt)
+                        .ToListAsync();
+                default:
+                    return await decisions
+                        .OrderBy(s => s.Name)
+                        .ToListAsync();
+            }
         }
 
         // GET: api/RandomDecisionItems/5

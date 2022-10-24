@@ -26,31 +26,27 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
           {
               return NotFound();
           }
+          
+          var decisions =  _context.WeightedDecisionItems
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.CriteriaList);
     
             switch (sortorder)
             {
                 case "name_desc":
-                    return await _context.WeightedDecisionItems
-                        .Include(ti => ti.Choices)
-                        .Include(ti => ti.CriteriaList)
+                    return await decisions
                         .OrderByDescending(s => s.Name)
                         .ToListAsync();
                 case "Date":
-                    return await _context.WeightedDecisionItems
-                        .Include(ti => ti.Choices)
-                        .Include(ti => ti.CriteriaList)
+                    return await decisions
                         .OrderBy(s => s.CreatedAt)
                         .ToListAsync();
                 case "date_desc":
-                    return await _context.WeightedDecisionItems
-                        .Include(ti => ti.Choices)
-                        .Include(ti => ti.CriteriaList)
+                    return await decisions
                         .OrderByDescending(s => s.CreatedAt)
                         .ToListAsync();
                 default:
-                    return await _context.WeightedDecisionItems
-                        .Include(ti => ti.Choices)
-                        .Include(ti => ti.CriteriaList)
+                    return await decisions
                         .OrderBy(s => s.Name)
                         .ToListAsync();
             }

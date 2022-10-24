@@ -19,19 +19,38 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
 
         // GET: api/ConditionalDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ConditionalDecisionItem>>> GetConditionalDecisionItems()
+        public async Task<ActionResult<IEnumerable<ConditionalDecisionItem>>> GetConditionalDecisionItems(string? sortorder)
         {
           if (_context.ConditionalDecisionItems == null)
           {
               return NotFound();
           }
-            var finalResult = await _context.ConditionalDecisionItems
-            .Include(ti => ti.Choices)
-            .Include(ti => ti.Conditions).ThenInclude(thenTi => thenTi.Include)
-            .Include(ti => ti.Conditions).ThenInclude(thenTi => thenTi.Exclude)
-            .ToListAsync();
+          var decisions =  _context.ConditionalDecisionItems
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.Conditions)
+                        .ThenInclude(thenTi => thenTi.Include)
+                        .Include(ti => ti.Conditions)
+                        .ThenInclude(thenTi => thenTi.Exclude);
 
-            return finalResult;
+          switch (sortorder)
+            {
+                case "name_desc":
+                    return await decisions
+                        .OrderByDescending(s => s.Name)
+                        .ToListAsync();
+                case "Date":
+                    return await decisions
+                        .OrderBy(s => s.CreatedAt)
+                        .ToListAsync();
+                case "date_desc":
+                    return await decisions
+                        .OrderByDescending(s => s.CreatedAt)
+                        .ToListAsync();
+                default:
+                    return await decisions
+                        .OrderBy(s => s.Name)
+                        .ToListAsync();
+            }
         }
 
         // GET: api/ConditionalDecisionItems/5
