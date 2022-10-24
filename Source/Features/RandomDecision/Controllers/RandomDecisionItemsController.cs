@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.RandomDecision.Models;
 using DecisionMakerApi.Common.Domains;
-using DecisionMakerApi.Common.Services;
+using DecisionMakerApi.Services.Pagination;
 
 namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 {

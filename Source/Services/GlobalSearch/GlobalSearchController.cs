@@ -5,7 +5,7 @@ using DecisionMakerApi.Features.RandomDecision.Models;
 using DecisionMakerApi.Features.WeightedDecision.Models;
 using DecisionMakerApi.Common.Domains;
 
-namespace DecisionMakerApi.Common.Controllers;
+namespace DecisionMakerApi.Services.GlobalSearch;
 
 [Route("api/[controller]")]
 [ApiController]

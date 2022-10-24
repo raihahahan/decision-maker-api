@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.WeightedDecision.Models;
 using DecisionMakerApi.Features.WeightedDecision.Domains;
 using DecisionMakerApi.Common.Domains;
-using DecisionMakerApi.Common.Services;
+using DecisionMakerApi.Services.Pagination;
 
 namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 {

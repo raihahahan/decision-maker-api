@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.ConditionalDecision.Models;
 using DecisionMakerApi.Common.Domains;
 using DecisionMakerApi.Features.ConditionalDecision.Domains;
-using DecisionMakerApi.Common.Services;
+using DecisionMakerApi.Services.Pagination;
 
 namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
 {
