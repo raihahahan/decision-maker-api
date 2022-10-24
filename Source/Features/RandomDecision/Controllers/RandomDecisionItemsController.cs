@@ -112,7 +112,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             {
                 return BadRequest();
             }
-
+            randomDecisionItem.UpdatedAt = new DateTime();
             _context.Entry(randomDecisionItem).State = EntityState.Modified;
 
             try

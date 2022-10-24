@@ -106,7 +106,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return BadRequest();
             }
-
+            weightedDecisionItem.UpdatedAt = new DateTime();
             _context.Entry(weightedDecisionItem).State = EntityState.Modified;
 
             try

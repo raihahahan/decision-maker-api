@@ -84,7 +84,7 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
             {
                 return BadRequest();
             }
-
+            conditionalDecisionItem.UpdatedAt = new DateTime();
             _context.Entry(conditionalDecisionItem).State = EntityState.Modified;
 
             try
