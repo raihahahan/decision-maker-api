@@ -23,28 +23,28 @@ public class GlobalSearchController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Decision>> GlobalSearch(string searchString)
+    public ActionResult<IEnumerable<Decision>> GlobalSearch(string? searchString)
     {
+        if (String.IsNullOrEmpty(searchString)) return Ok(new List<Decision>());
+
         var randomDecisions = from r in _randomCtx.RandomDecisionItems select r;
         var weightedDecisions = from w in _weightedCtx.WeightedDecisionItems select w;
         var conditionalDecisions = from c in _conditionalCtx.ConditionalDecisionItems select c;
         
         if (randomDecisions == null || weightedDecisions == null || conditionalDecisions == null) return NotFound();
         
-        if (!String.IsNullOrEmpty(searchString))
-        {
-            searchString = searchString.ToLower();
+        searchString = searchString.ToLower();
 
-            randomDecisions = randomDecisions.Where(r => r.Name.ToLower()!.Contains(searchString));
-            weightedDecisions = weightedDecisions.Where(w => w.Name.ToLower()!.Contains(searchString));
-            conditionalDecisions = conditionalDecisions.Where(c => c.Name.ToLower()!.Contains(searchString));
-        }
+        randomDecisions = randomDecisions.Where(r => r.Name.ToLower()!.Contains(searchString));
+        weightedDecisions = weightedDecisions.Where(w => w.Name.ToLower()!.Contains(searchString));
+        conditionalDecisions = conditionalDecisions.Where(c => c.Name.ToLower()!.Contains(searchString));
+
         var allDecisions = new List<Decision>(randomDecisions.Count() + weightedDecisions.Count() + conditionalDecisions.Count());
 
         allDecisions.AddRange(randomDecisions.Include(r => r.Choices));
         allDecisions.AddRange(weightedDecisions.Include(w => w.Choices));
         allDecisions.AddRange(conditionalDecisions.Include(c => c.Choices));
 
-        return allDecisions;
+        return Ok(allDecisions);
     }
 }
