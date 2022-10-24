@@ -19,16 +19,41 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 
         // GET: api/WeightedDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems()
+        public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems(string? sortorder)
+
         {
           if (_context.WeightedDecisionItems == null)
           {
               return NotFound();
           }
-            return await _context.WeightedDecisionItems
-                .Include(ti => ti.Choices)
-                .Include(ti => ti.CriteriaList)
-                .ToListAsync();
+    
+            switch (sortorder)
+            {
+                case "name_desc":
+                    return await _context.WeightedDecisionItems
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.CriteriaList)
+                        .OrderByDescending(s => s.Name)
+                        .ToListAsync();
+                case "Date":
+                    return await _context.WeightedDecisionItems
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.CriteriaList)
+                        .OrderBy(s => s.CreatedAt)
+                        .ToListAsync();
+                case "date_desc":
+                    return await _context.WeightedDecisionItems
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.CriteriaList)
+                        .OrderByDescending(s => s.CreatedAt)
+                        .ToListAsync();
+                default:
+                    return await _context.WeightedDecisionItems
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.CriteriaList)
+                        .OrderBy(s => s.Name)
+                        .ToListAsync();
+            }
         }
 
         // GET: api/WeightedDecisionItems/5
