@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.WeightedDecision.Models;
 using DecisionMakerApi.Features.WeightedDecision.Domains;
 using DecisionMakerApi.Common.Domains;
+using DecisionMakerApi.Common.Services;
 
 namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 {
@@ -19,36 +20,37 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 
         // GET: api/WeightedDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems(string? sortorder)
-
+        public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems(string? sortorder, int? pageNumber)
         {
-          if (_context.WeightedDecisionItems == null)
-          {
-              return NotFound();
-          }
+      
+            if (_context.WeightedDecisionItems == null)
+            {
+                return NotFound();
+            }
+            int pageSize = 3;
           
-          var decisions =  _context.WeightedDecisionItems
-                        .Include(ti => ti.Choices)
-                        .Include(ti => ti.CriteriaList);
+            var decisions =  _context.WeightedDecisionItems
+                                .Include(ti => ti.Choices)
+                                .Include(ti => ti.CriteriaList);
     
             switch (sortorder)
             {
                 case "name_desc":
-                    return await decisions
-                        .OrderByDescending(s => s.Name)
-                        .ToListAsync();
+                    return await PaginatedList<WeightedDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderByDescending(s => s.Name), pageNumber ?? 1, pageSize);
                 case "Date":
-                    return await decisions
-                        .OrderBy(s => s.CreatedAt)
-                        .ToListAsync();
+                    return await PaginatedList<WeightedDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderBy(s => s.CreatedAt), pageNumber ?? 1, pageSize);
                 case "date_desc":
-                    return await decisions
-                        .OrderByDescending(s => s.CreatedAt)
-                        .ToListAsync();
+                    return await PaginatedList<WeightedDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderByDescending(s => s.CreatedAt), pageNumber ?? 1, pageSize);
                 default:
-                    return await decisions
-                        .OrderBy(s => s.Name)
-                        .ToListAsync();
+                    return await PaginatedList<WeightedDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);               
             }
         }
 

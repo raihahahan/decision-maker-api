@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.RandomDecision.Models;
 using DecisionMakerApi.Common.Domains;
+using DecisionMakerApi.Common.Services;
 
 namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 {
@@ -23,12 +24,14 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 
         // GET: api/RandomDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems(string? sortorder)
+        public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems(string? sortorder, int? pageNumber)
         {
           if (_context.RandomDecisionItems == null)
           {
               return NotFound();
           }
+
+        int pageSize = 3;
 
         var decisions = _context.RandomDecisionItems
                     .Include(ti => ti.Choices);
@@ -36,21 +39,21 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
           switch (sortorder)
             {
                 case "name_desc":
-                    return await decisions
-                        .OrderByDescending(s => s.Name)
-                        .ToListAsync();
+                    return await PaginatedList<RandomDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderByDescending(s => s.Name), pageNumber ?? 1, pageSize);
                 case "Date":
-                    return await decisions
-                        .OrderBy(s => s.CreatedAt)
-                        .ToListAsync();
+                    return await PaginatedList<RandomDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderBy(s => s.CreatedAt), pageNumber ?? 1, pageSize);
                 case "date_desc":
-                    return await decisions
-                        .OrderByDescending(s => s.CreatedAt)
-                        .ToListAsync();
+                    return await PaginatedList<RandomDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderByDescending(s => s.CreatedAt), pageNumber ?? 1, pageSize);
                 default:
-                    return await decisions
-                        .OrderBy(s => s.Name)
-                        .ToListAsync();
+                    return await PaginatedList<RandomDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize); 
             }
         }
 

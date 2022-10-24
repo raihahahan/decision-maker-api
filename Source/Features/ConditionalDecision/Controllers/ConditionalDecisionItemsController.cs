@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.ConditionalDecision.Models;
 using DecisionMakerApi.Common.Domains;
 using DecisionMakerApi.Features.ConditionalDecision.Domains;
+using DecisionMakerApi.Common.Services;
 
 namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
 {
@@ -19,12 +20,13 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
 
         // GET: api/ConditionalDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ConditionalDecisionItem>>> GetConditionalDecisionItems(string? sortorder)
+        public async Task<ActionResult<IEnumerable<ConditionalDecisionItem>>> GetConditionalDecisionItems(string? sortorder, int? pageNumber)
         {
           if (_context.ConditionalDecisionItems == null)
           {
               return NotFound();
           }
+          int pageSize = 3;
           var decisions =  _context.ConditionalDecisionItems
                         .Include(ti => ti.Choices)
                         .Include(ti => ti.Conditions)
@@ -35,21 +37,21 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
           switch (sortorder)
             {
                 case "name_desc":
-                    return await decisions
-                        .OrderByDescending(s => s.Name)
-                        .ToListAsync();
+                    return await PaginatedList<ConditionalDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderByDescending(s => s.Name), pageNumber ?? 1, pageSize);
                 case "Date":
-                    return await decisions
-                        .OrderBy(s => s.CreatedAt)
-                        .ToListAsync();
+                    return await PaginatedList<ConditionalDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderBy(s => s.CreatedAt), pageNumber ?? 1, pageSize);
                 case "date_desc":
-                    return await decisions
-                        .OrderByDescending(s => s.CreatedAt)
-                        .ToListAsync();
+                    return await PaginatedList<ConditionalDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderByDescending(s => s.CreatedAt), pageNumber ?? 1, pageSize);
                 default:
-                    return await decisions
-                        .OrderBy(s => s.Name)
-                        .ToListAsync();
+                    return await PaginatedList<ConditionalDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);               
             }
         }
 
