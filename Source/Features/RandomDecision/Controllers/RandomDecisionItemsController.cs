@@ -8,9 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using DecisionMakerApi.Features.RandomDecision.Models;
 using DecisionMakerApi.Common.Domains;
 using DecisionMakerApi.Services.Pagination;
+using Microsoft.AspNetCore.Cors;
+using DecisionMakerApi.Common.Utils;
 
 namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
-{
+{   
+    [EnableCors("CORS_spec")]
     [Route("api/[controller]")]
     [ApiController]
     public class RandomDecisionItemsController : ControllerBase
@@ -77,9 +80,38 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             return randomDecisionItem;
         }
 
-        // GET: api/RandomDecisionItem/5/decide
-        [HttpGet("{id}/decide")]
-        public async Task<ActionResult<Choice>> GetMakeRandomDecision(long id)
+       
+
+        private ActionResult<FinalResult> Decide(RandomDecisionItem randomDecisionItem) 
+        {
+            if (randomDecisionItem == null)
+            {
+                return NotFound();
+            }
+
+            List<Choice> ls = randomDecisionItem.Choices; 
+            if (ls.Count == 0) return NotFound();
+            List<WeightedResult> w = ls.Select((item, index) => {
+                var rand = new Random();
+                double weight = rand.NextDouble();
+                return new WeightedResult(index, item.Id, weight, item.Name);
+            })
+            .OrderBy(s => s.TotalWeight)
+            .ToList();
+            
+            return new FinalResult(w, randomDecisionItem.Name);
+        }
+
+        [HttpPost("decide")]
+        public ActionResult<FinalResult> PostMakeRandomDecision(RandomDecisionItem randomDecisionItem)
+        {
+            return Decide(randomDecisionItem);
+        }
+
+
+        // POST: api/RandomDecisionItem/5/decide
+        [HttpPost("{id}/decide")]
+        public async Task<ActionResult<FinalResult>> PostMakeRandomDecision(long id)
         {
             if (_context.RandomDecisionItems == null)
             {
@@ -90,16 +122,9 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 
             var randomDecisionItem = randomDecisionItems.Find(i => i.Id == id);
 
-            if (randomDecisionItem == null)
-            {
-                return NotFound();
-            }
+            if (randomDecisionItem == null) return NotFound();
 
-            List<Choice> ls = randomDecisionItem.Choices; 
-            if (ls.Count == 0) return NotFound();
-            var rand = new Random();
-            int index = rand.Next(ls.Count);
-            return ls[index];
+            return Decide(randomDecisionItem);
         }
 
 
@@ -113,8 +138,13 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
                 return BadRequest();
             }
             randomDecisionItem.UpdatedAt = new DateTime();
+            var removed = _context.Choices.Where(i => !randomDecisionItem.Choices.Contains(i));
+    
             _context.Entry(randomDecisionItem).State = EntityState.Modified;
-
+            _context.Choices.UpdateRange(randomDecisionItem.Choices);
+            _context.Choices.RemoveRange(removed);
+        
+             
             try
             {
                 await _context.SaveChangesAsync();
@@ -144,6 +174,10 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
               return Problem("Entity set 'RandomDecisionContext.RandomDecisionItems'  is null.");
           }
             _context.RandomDecisionItems.Add(randomDecisionItem);
+            foreach (var item in randomDecisionItem.Choices)
+            {
+                _context.Choices.Add(item);
+            }
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetRandomDecisionItem), new { id = randomDecisionItem.Id }, randomDecisionItem);
