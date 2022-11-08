@@ -6,7 +6,14 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "CORS_spec",
+                      builder =>
+                      {
+                          builder.WithOrigins("http://localhost:3000").AllowAnyMethod().AllowAnyHeader();
+                      });
+});   
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -20,6 +27,7 @@ builder.Services.AddDbContext<ConditionalDecisionContext>(opt =>
 builder.Services.AddDbContext<WeightedDecisionContext>(opt =>
     opt.UseInMemoryDatabase("WeightedDecisionList"));
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -30,6 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("CORS_spec");
 
 app.UseAuthorization();
 
