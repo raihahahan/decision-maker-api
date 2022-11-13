@@ -14,7 +14,8 @@ public class RandomDecisionContext : DbContext
     {
         modelBuilder.Entity<RandomDecisionItem>()
             .HasMany(d => d.Choices)
-            .WithOne();
+            .WithOne()
+            .HasForeignKey(i => i.DecisionId);
     }
 
 } 

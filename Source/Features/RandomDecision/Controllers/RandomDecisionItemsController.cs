@@ -9,7 +9,6 @@ using DecisionMakerApi.Features.RandomDecision.Models;
 using DecisionMakerApi.Common.Domains;
 using DecisionMakerApi.Services.Pagination;
 using Microsoft.AspNetCore.Cors;
-using DecisionMakerApi.Common.Utils;
 
 namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 {   
@@ -138,13 +137,9 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
                 return BadRequest();
             }
             randomDecisionItem.UpdatedAt = new DateTime();
-            var removed = _context.Choices.Where(i => !randomDecisionItem.Choices.Contains(i));
-    
+            _context.Entry(randomDecisionItem).Property(i => i.UpdatedAt).IsModified = true;
             _context.Entry(randomDecisionItem).State = EntityState.Modified;
-            _context.Choices.UpdateRange(randomDecisionItem.Choices);
-            _context.Choices.RemoveRange(removed);
-        
-             
+
             try
             {
                 await _context.SaveChangesAsync();
