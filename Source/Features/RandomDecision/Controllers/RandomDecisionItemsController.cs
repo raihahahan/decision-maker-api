@@ -11,7 +11,7 @@ using DecisionMakerApi.Services.Pagination;
 using Microsoft.AspNetCore.Cors;
 
 namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
-{   
+{
     [EnableCors("CORS_spec")]
     [Route("api/[controller]")]
     [ApiController]
@@ -28,17 +28,17 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems(string? sortorder, int? pageNumber)
         {
-          if (_context.RandomDecisionItems == null)
-          {
-              return NotFound();
-          }
+            if (_context.RandomDecisionItems == null)
+            {
+                return NotFound();
+            }
 
-        int pageSize = 3;
+            int pageSize = 3;
 
-        var decisions = _context.RandomDecisionItems
-                    .Include(ti => ti.Choices);
+            var decisions = _context.RandomDecisionItems
+                        .Include(ti => ti.Choices);
 
-          switch (sortorder)
+            switch (sortorder)
             {
                 case "name_desc":
                     return await PaginatedList<RandomDecisionItem>
@@ -55,7 +55,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
                 default:
                     return await PaginatedList<RandomDecisionItem>
                             .CreateAsync(decisions
-                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize); 
+                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
             }
         }
 
@@ -63,12 +63,12 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RandomDecisionItem>> GetRandomDecisionItem(long id)
         {
-          if (_context.RandomDecisionItems == null)
-          {
-              return NotFound();
-          }
+            if (_context.RandomDecisionItems == null)
+            {
+                return NotFound();
+            }
             var randomDecisionItems = await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
-            
+
             var randomDecisionItem = randomDecisionItems.Find(i => i.Id == id);
 
             if (randomDecisionItem == null)
@@ -79,25 +79,26 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             return randomDecisionItem;
         }
 
-       
 
-        private ActionResult<FinalResult> Decide(RandomDecisionItem randomDecisionItem) 
+
+        private ActionResult<FinalResult> Decide(RandomDecisionItem randomDecisionItem)
         {
             if (randomDecisionItem == null)
             {
                 return NotFound();
             }
 
-            List<Choice> ls = randomDecisionItem.Choices; 
+            List<Choice> ls = randomDecisionItem.Choices;
             if (ls.Count == 0) return NotFound();
-            List<WeightedResult> w = ls.Select((item, index) => {
+            List<WeightedResult> w = ls.Select((item, index) =>
+            {
                 var rand = new Random();
                 double weight = rand.NextDouble();
                 return new WeightedResult(index, item.Id, weight, item.Name);
             })
             .OrderBy(s => s.TotalWeight)
             .ToList();
-            
+
             return new FinalResult(w, randomDecisionItem.Name);
         }
 
@@ -117,7 +118,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
                 return NotFound();
             }
 
-            var randomDecisionItems =  await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
+            var randomDecisionItems = await _context.RandomDecisionItems.Include(ti => ti.Choices).ToListAsync();
 
             var randomDecisionItem = randomDecisionItems.Find(i => i.Id == id);
 
@@ -164,10 +165,10 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
         [HttpPost]
         public async Task<ActionResult<RandomDecisionItem>> PostRandomDecisionItem(RandomDecisionItem randomDecisionItem)
         {
-          if (_context.RandomDecisionItems == null)
-          {
-              return Problem("Entity set 'RandomDecisionContext.RandomDecisionItems'  is null.");
-          }
+            if (_context.RandomDecisionItems == null)
+            {
+                return Problem("Entity set 'RandomDecisionContext.RandomDecisionItems'  is null.");
+            }
             _context.RandomDecisionItems.Add(randomDecisionItem);
             foreach (var item in randomDecisionItem.Choices)
             {
