@@ -6,9 +6,10 @@ public class WeightedInput
     public long Id { get; set; }
     public long ChoiceId { get; set; }
     public string ChoiceName { get; set; } = null!;
-    public List<CriteriaInput> _CriteriaInput
+    public List<CriteriaInput> CriteriaInput
     {
         get { return _criteriaInput; }
-        set{ _criteriaInput = value; }
+        set { _criteriaInput = value; }
     }
+    public long ForeignId { get; set; }
 }

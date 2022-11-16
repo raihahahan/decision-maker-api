@@ -22,17 +22,17 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems(string? sortorder, int? pageNumber)
         {
-      
+
             if (_context.WeightedDecisionItems == null)
             {
                 return NotFound();
             }
             int pageSize = 3;
-          
-            var decisions =  _context.WeightedDecisionItems
+
+            var decisions = _context.WeightedDecisionItems
                                 .Include(ti => ti.Choices)
                                 .Include(ti => ti.CriteriaList);
-    
+
             switch (sortorder)
             {
                 case "name_desc":
@@ -50,7 +50,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                 default:
                     return await PaginatedList<WeightedDecisionItem>
                             .CreateAsync(decisions
-                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);               
+                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
             }
         }
 
@@ -58,14 +58,14 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<WeightedDecisionItem>> GetWeightedDecisionItem(long id)
         {
-          if (_context.WeightedDecisionItems == null)
-          {
-              return NotFound();
-          }
+            if (_context.WeightedDecisionItems == null)
+            {
+                return NotFound();
+            }
             var weightedDecisionItems = await _context.WeightedDecisionItems.Include(ti => ti.Choices).Include(ti => ti.CriteriaList).ToListAsync();
-            
+
             var weightedDecisionItem = weightedDecisionItems.Find(i => i.Id == id);
-            
+
             if (weightedDecisionItem == null)
             {
                 return NotFound();
@@ -76,25 +76,27 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 
         // POST: api/WeightedDecisionItems/5/decide
         [HttpPost("{id}/decide")]
-        public async Task<ActionResult<List<WeightedResult>>> GetMakeWeightedDecision(long id, [FromBody] List<WeightedInput> _weightedInput)
+        public async Task<ActionResult<FinalResult>> GetMakeWeightedDecision(long id, [FromBody] List<WeightedInput> _weightedInput)
         {
 
             var weightedDecisionItem = await this.GetWeightedDecisionItem(id);
 
             if (weightedDecisionItem == null || weightedDecisionItem.Value == null) return NotFound();
-            
-            List<Choice> choiceList = weightedDecisionItem.Value.Choices;
-            if (choiceList.Count == 0) return NotFound();  
 
-            List<WeightedResult> FinalList = _weightedInput.Select((w, index) => {
+            List<Choice> choiceList = weightedDecisionItem.Value.Choices;
+            if (choiceList.Count == 0) return NotFound();
+
+            List<WeightedResult> FinalList = _weightedInput.Select((w, index) =>
+            {
                 double totalWeight = 0;
-                w._CriteriaInput.ForEach(c => {
+                w.CriteriaInput.ForEach(c =>
+                {
                     totalWeight += c.value * c.Weight;
                 });
                 return new WeightedResult(index, w.ChoiceId, totalWeight, w.ChoiceName);
             }).OrderByDescending(o => o.TotalWeight).ToList();
 
-            return FinalList;
+            return new FinalResult(FinalList, weightedDecisionItem.Value.Name);
         }
 
         // PUT: api/WeightedDecisionItems/5
@@ -107,7 +109,16 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                 return BadRequest();
             }
             weightedDecisionItem.UpdatedAt = new DateTime();
+            var removedChoices = _context.Choices.Where(i => !weightedDecisionItem.Choices.Contains(i));
+            var removedCriteria = _context.Criterias.Where(i => !weightedDecisionItem.CriteriaList.Contains(i));
+
             _context.Entry(weightedDecisionItem).State = EntityState.Modified;
+
+            _context.Choices.UpdateRange(weightedDecisionItem.Choices);
+            _context.Choices.RemoveRange(removedChoices);
+
+            _context.Criterias.UpdateRange(weightedDecisionItem.CriteriaList);
+            _context.Criterias.RemoveRange(removedCriteria);
 
             try
             {
@@ -133,11 +144,19 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
         [HttpPost]
         public async Task<ActionResult<WeightedDecisionItem>> PostWeightedDecisionItem(WeightedDecisionItem weightedDecisionItem)
         {
-          if (_context.WeightedDecisionItems == null)
-          {
-              return Problem("Entity set 'WeightedDecisionContext.WeightedDecisionItems'  is null.");
-          }
+            if (_context.WeightedDecisionItems == null)
+            {
+                return Problem("Entity set 'WeightedDecisionContext.WeightedDecisionItems'  is null.");
+            }
             _context.WeightedDecisionItems.Add(weightedDecisionItem);
+            foreach (var item in weightedDecisionItem.Choices)
+            {
+                _context.Choices.Add(item);
+            }
+            foreach (var item in weightedDecisionItem.CriteriaList)
+            {
+                _context.Criterias.Add(item);
+            }
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetWeightedDecisionItem), new { id = weightedDecisionItem.Id }, weightedDecisionItem);
