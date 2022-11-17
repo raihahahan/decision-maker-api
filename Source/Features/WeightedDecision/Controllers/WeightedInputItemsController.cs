@@ -42,7 +42,12 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return NotFound();
             }
-            var weightedInputItem = await _context.WeightedInputItems.FindAsync(id);
+            var weightedInputItems = await _context.WeightedInputItems
+                                                .Include(i => i.WeightedInputs)
+                                                .ThenInclude(i => i.CriteriaInput)
+                                                .ToListAsync();
+
+            var weightedInputItem = weightedInputItems.Find(i => i.WeightedItemId == id);
 
             if (weightedInputItem == null)
             {
@@ -92,12 +97,15 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return Problem("Entity set 'WeightedDecisionContext.WeightedInputItems'  is null.");
             }
+            
             _context.WeightedInputItems.Add(weightedInputItem);
             foreach (var item in weightedInputItem.WeightedInputs)
             {
+                item.ForeignId = weightedInputItem.Id;
                 _context.WeightedInputs.Add(item);
                 foreach (var _item in item.CriteriaInput)
                 {
+                    _item.InputId = item.Id;
                     _context.CriteriaInputs.Add(_item);
                 }
             }

@@ -151,10 +151,12 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             _context.WeightedDecisionItems.Add(weightedDecisionItem);
             foreach (var item in weightedDecisionItem.Choices)
             {
+                item.DecisionId = weightedDecisionItem.Id;
                 _context.Choices.Add(item);
             }
             foreach (var item in weightedDecisionItem.CriteriaList)
             {
+                item.DecisionId = weightedDecisionItem.Id;
                 _context.Criterias.Add(item);
             }
             await _context.SaveChangesAsync();
