@@ -62,7 +62,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutWeightedInputItem(long id, WeightedInputItem weightedInputItem)
         {
-            if (id != weightedInputItem.Id)
+            if (id != weightedInputItem.WeightedItemId)
             {
                 return BadRequest();
             }
