@@ -27,7 +27,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return NotFound();
             }
-            int pageSize = 3;
+            int pageSize = 20;
 
             var decisions = _context.WeightedDecisionItems
                                 .Include(ti => ti.Choices)
@@ -109,16 +109,8 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                 return BadRequest();
             }
             weightedDecisionItem.UpdatedAt = new DateTime();
-            var removedChoices = _context.Choices.Where(i => !weightedDecisionItem.Choices.Contains(i));
-            var removedCriteria = _context.Criterias.Where(i => !weightedDecisionItem.CriteriaList.Contains(i));
-
+            
             _context.Entry(weightedDecisionItem).State = EntityState.Modified;
-
-            _context.Choices.UpdateRange(weightedDecisionItem.Choices);
-            _context.Choices.RemoveRange(removedChoices);
-
-            _context.Criterias.UpdateRange(weightedDecisionItem.CriteriaList);
-            _context.Criterias.RemoveRange(removedCriteria);
 
             try
             {
@@ -138,6 +130,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 
             return NoContent();
         }
+
 
         // POST: api/WeightedDecisionItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
