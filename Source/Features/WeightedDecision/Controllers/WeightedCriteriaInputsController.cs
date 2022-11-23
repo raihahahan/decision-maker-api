@@ -80,6 +80,48 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             return NoContent();
         }
 
+        [HttpPut("{id}/editName")]
+         public async Task<IActionResult> PutCriteriaInputName(long id, CriteriaInput criteriaInput)
+        {
+            if (id != criteriaInput.CriteriaId)
+            {
+                return BadRequest();
+            }
+
+            var criteriaInputs = await _context.CriteriaInputs.ToListAsync();
+
+            var toEdit = criteriaInputs.Where(i => i.CriteriaId == id);
+
+            foreach (var item in toEdit)
+            {
+                item.Name = criteriaInput.Name;
+                item.Weight = criteriaInput.Weight;
+                // _context.Entry(item).State = EntityState.Modified;                
+            }
+
+            _context.CriteriaInputs.UpdateRange(toEdit);
+
+            // _context.Entry(criteriaInput).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CriteriaInputExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
         // POST: api/WeightedCriteriaInputs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
@@ -103,13 +145,14 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return NotFound();
             }
-            var criteriaInput = await _context.CriteriaInputs.FindAsync(id);
-            if (criteriaInput == null)
+            var criteriaInput = await _context.CriteriaInputs.ToListAsync();
+            var toDelete = criteriaInput.Where(i => i.CriteriaId == id);
+            if (toDelete == null)
             {
                 return NotFound();
             }
 
-            _context.CriteriaInputs.Remove(criteriaInput);
+            _context.CriteriaInputs.RemoveRange(toDelete);
             await _context.SaveChangesAsync();
 
             return NoContent();
