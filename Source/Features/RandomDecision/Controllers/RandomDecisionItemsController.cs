@@ -172,6 +172,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             _context.RandomDecisionItems.Add(randomDecisionItem);
             foreach (var item in randomDecisionItem.Choices)
             {
+                item.DecisionId = randomDecisionItem.Id;
                 _context.Choices.Add(item);
             }
             await _context.SaveChangesAsync();
