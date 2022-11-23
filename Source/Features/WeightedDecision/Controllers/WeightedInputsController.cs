@@ -93,6 +93,10 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                 return Problem("Entity set 'WeightedDecisionContext.WeightedInputs'  is null.");
             }
             _context.WeightedInputs.Add(weightedInput);
+            foreach (var item in weightedInput.CriteriaInput)
+            {   
+                _context.CriteriaInputs.Add(item);
+            }
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetWeightedInput", new { id = weightedInput.Id }, weightedInput);
@@ -106,13 +110,14 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return NotFound();
             }
-            var weightedInput = await _context.WeightedInputs.FindAsync(id);
-            if (weightedInput == null)
+            var weightedInput = await _context.WeightedInputs.ToListAsync();
+            var toDelete = weightedInput.Find(i => i.ChoiceId == id);
+            if (toDelete == null)
             {
                 return NotFound();
             }
 
-            _context.WeightedInputs.Remove(weightedInput);
+            _context.WeightedInputs.Remove(toDelete);
             await _context.SaveChangesAsync();
 
             return NoContent();
