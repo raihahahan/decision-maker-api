@@ -12,7 +12,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
     public class WeightedDecisionItemsController : ControllerBase
     {
         private readonly WeightedDecisionContext _context;
-
+        private const int pageSize = 5;
         public WeightedDecisionItemsController(WeightedDecisionContext context)
         {
             _context = context;
@@ -20,18 +20,29 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
 
         // GET: api/WeightedDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems(string? sortorder, int? pageNumber)
+        public async Task<ActionResult<IEnumerable<WeightedDecisionItem>>> GetWeightedDecisionItems(string? sortorder, int? pageNumber, string? q)
         {
 
             if (_context.WeightedDecisionItems == null)
             {
                 return NotFound();
             }
-            int pageSize = 20;
 
             var decisions = _context.WeightedDecisionItems
                                 .Include(ti => ti.Choices)
                                 .Include(ti => ti.CriteriaList);
+
+            if (!String.IsNullOrEmpty(q) && q.Trim() != "") {
+                decisions = decisions
+                        .Where(i => i.Name
+                                    .Trim()
+                                    .ToLower()
+                                    .Contains(q
+                                                .Trim()
+                                                .ToLower()))
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.CriteriaList);
+            } 
 
             switch (sortorder)
             {
@@ -52,6 +63,25 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                             .CreateAsync(decisions
                                             .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
             }
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult<int>> GetTotalPages() 
+        {
+             if (_context.WeightedDecisionItems == null)
+            {
+                return NotFound();
+            }
+
+            int pageSize = 5;
+
+            var decisions = await _context.WeightedDecisionItems
+                        .Include(ti => ti.Choices)
+                        .ToListAsync();
+
+            var pagination = new PaginatedList<WeightedDecisionItem>(decisions, decisions.Count(), 1, pageSize);
+
+            return pagination.TotalPages;
         }
 
         // GET: api/WeightedDecisionItems/5
@@ -108,8 +138,7 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
             {
                 return BadRequest();
             }
-            weightedDecisionItem.UpdatedAt = new DateTime();
-            
+    
             _context.Entry(weightedDecisionItem).State = EntityState.Modified;
 
             try

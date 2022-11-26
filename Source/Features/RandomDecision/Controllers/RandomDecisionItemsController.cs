@@ -18,7 +18,7 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
     public class RandomDecisionItemsController : ControllerBase
     {
         private readonly RandomDecisionContext _context;
-
+        private const int pageSize = 5;
         public RandomDecisionItemsController(RandomDecisionContext context)
         {
             _context = context;
@@ -26,17 +26,25 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 
         // GET: api/RandomDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems(string? sortorder, int? pageNumber)
+        public async Task<ActionResult<IEnumerable<RandomDecisionItem>>> GetRandomDecisionItems(string? sortorder, int? pageNumber, string? q)
         {
             if (_context.RandomDecisionItems == null)
             {
                 return NotFound();
             }
+            
+            var decisions = _context.RandomDecisionItems.Include(i => i.Choices);
 
-            int pageSize = 3;
-
-            var decisions = _context.RandomDecisionItems
+            if (!String.IsNullOrEmpty(q) && q.Trim() != "") {
+                decisions = decisions
+                        .Where(i => i.Name
+                                    .Trim()
+                                    .ToLower()
+                                    .Contains(q
+                                                .Trim()
+                                                .ToLower()))
                         .Include(ti => ti.Choices);
+            } 
 
             switch (sortorder)
             {
@@ -57,6 +65,25 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
                             .CreateAsync(decisions
                                             .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
             }
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult<int>> GetTotalPages() 
+        {
+             if (_context.RandomDecisionItems == null)
+            {
+                return NotFound();
+            }
+
+            int pageSize = 5;
+
+            var decisions = await _context.RandomDecisionItems
+                        .Include(ti => ti.Choices)
+                        .ToListAsync();
+
+            var pagination = new PaginatedList<RandomDecisionItem>(decisions, decisions.Count(), 1, pageSize);
+
+            return pagination.TotalPages;
         }
 
         // GET: api/RandomDecisionItems/5
@@ -137,8 +164,6 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             {
                 return BadRequest();
             }
-            randomDecisionItem.UpdatedAt = new DateTime();
-            _context.Entry(randomDecisionItem).Property(i => i.UpdatedAt).IsModified = true;
             _context.Entry(randomDecisionItem).State = EntityState.Modified;
 
             try
