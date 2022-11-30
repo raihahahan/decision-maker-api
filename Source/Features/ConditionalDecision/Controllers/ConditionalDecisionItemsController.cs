@@ -12,6 +12,7 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
     public class ConditionalDecisionItemsController : ControllerBase
     {
         private readonly ConditionalDecisionContext _context;
+        private const int pageSize = 5;
 
         public ConditionalDecisionItemsController(ConditionalDecisionContext context)
         {
@@ -20,13 +21,13 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
 
         // GET: api/ConditionalDecisionItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ConditionalDecisionItem>>> GetConditionalDecisionItems(string? sortorder, int? pageNumber)
+        public async Task<ActionResult<IEnumerable<ConditionalDecisionItem>>> GetConditionalDecisionItems(string? sortorder, int? pageNumber, string? q)
         {
           if (_context.ConditionalDecisionItems == null)
           {
               return NotFound();
           }
-          int pageSize = 3;
+
           var decisions =  _context.ConditionalDecisionItems
                         .Include(ti => ti.Choices)
                         .Include(ti => ti.Conditions)
@@ -55,6 +56,25 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
             }
         }
 
+        [HttpGet("totalPages")]
+        public async Task<ActionResult<int>> GetTotalPages() 
+        {
+             if (_context.ConditionalDecisionItems == null)
+            {
+                return NotFound();
+            }
+
+            int pageSize = 5;
+
+            var decisions = await _context.ConditionalDecisionItems
+                        .Include(ti => ti.Choices)
+                        .ToListAsync();
+
+            var pagination = new PaginatedList<ConditionalDecisionItem>(decisions, decisions.Count(), 1, pageSize);
+
+            return pagination.TotalPages;
+        }
+
         // GET: api/ConditionalDecisionItems/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ConditionalDecisionItem>> GetConditionalDecisionItem(long id)
@@ -63,7 +83,13 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
           {
               return NotFound();
           }
-            var conditionalDecisionItems = await _context.ConditionalDecisionItems.Include(ti => ti.Choices).Include(ti => ti.Conditions).ToListAsync();
+            var conditionalDecisionItems = await _context.ConditionalDecisionItems
+                .Include(ti => ti.Choices)
+                .Include(ti => ti.Conditions)
+                .ThenInclude(ti => ti.Include)
+                .Include(ti => ti.Conditions)
+                .ThenInclude(ti => ti.Exclude)
+                .ToListAsync();
 
             var conditionalDecisionItem = conditionalDecisionItems.Find(i => i.Id == id);
 
@@ -116,6 +142,24 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
               return Problem("Entity set 'ConditionalDecisionContext.ConditionalDecisionItems'  is null.");
           }
             _context.ConditionalDecisionItems.Add(conditionalDecisionItem);
+
+            foreach (var item in conditionalDecisionItem.Choices)
+            {
+                _context.Choices.Add(item);
+            }
+
+            foreach (var item in conditionalDecisionItem.Conditions)
+            {
+                _context.Conditions.Add(item);
+                foreach (var _include in item.Include)
+                {
+                    _context.Include.Add(_include);
+                }
+                foreach (var _exclude in item.Exclude)
+                {
+                    _context.Exclude.Add(_exclude);
+                }
+            }
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetConditionalDecisionItem), new { id = conditionalDecisionItem.Id }, conditionalDecisionItem);
@@ -143,16 +187,19 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
 
         // POST: api/ConditionalDecisionItems/5/decide
         [HttpPost("{id}/decide")]
-        public async Task<ActionResult<List<WeightedResult>>> GetMakeConditionalDecision(long id, [FromBody] List<ConditionalInput> conditionalInput)
+        public async Task<ActionResult<FinalResult>> GetMakeConditionalDecision(long id, [FromBody] List<ConditionalInput> conditionalInput)
         {
             var conditionalDecisionItem = await this.GetConditionalDecisionItem(id);
 
             if (conditionalDecisionItem == null || conditionalDecisionItem.Value == null || conditionalInput == null) return NotFound();
 
-            Dictionary<long, int> PointDict = new Dictionary<long, int>();
+            Dictionary<string, int> PointDict = new Dictionary<string, int>();
 
             conditionalDecisionItem.Value.Choices.ForEach(choice => {
-                PointDict.Add(choice.Id, 0);
+                if (choice?.RefId != null) {
+                    PointDict.Add(choice.RefId, 0);
+                }
+                
             });
 
             conditionalInput.ForEach(c => {
@@ -163,17 +210,17 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
                 }
             });
 
-            List<WeightedResult> FinalResult = new List<WeightedResult>();
+            List<WeightedResult> _FinalResult = new List<WeightedResult>();
             int idIndex = 0;
-            foreach(KeyValuePair<long, int> entry in PointDict) 
+            foreach(KeyValuePair<string, int> entry in PointDict) 
             {
-                Choice? EntryChoice = conditionalDecisionItem.Value.Choices.Find(choice => choice.Id == entry.Key);
+                Choice? EntryChoice = conditionalDecisionItem.Value.Choices.Find(choice => choice.RefId != null ? choice.RefId.Equals(entry.Key) : false);
                 if (EntryChoice == null) return NotFound();
-                FinalResult.Add(new WeightedResult(idIndex, EntryChoice.Id, entry.Value, EntryChoice.Name));
+                _FinalResult.Add(new WeightedResult(idIndex, EntryChoice.Id, entry.Value, EntryChoice.Name));
             }
-            FinalResult = FinalResult.OrderByDescending(o => o.TotalWeight).ToList();
+            _FinalResult = _FinalResult.OrderByDescending(o => o.TotalWeight).ToList();
 
-            return FinalResult;
+            return new FinalResult(_FinalResult, conditionalDecisionItem.Value.Name);
         }
 
         private bool ConditionalDecisionItemExists(long id)
