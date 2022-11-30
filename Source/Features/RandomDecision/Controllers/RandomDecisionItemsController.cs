@@ -48,6 +48,10 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
 
             switch (sortorder)
             {
+                case "name":
+                    return await PaginatedList<RandomDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
                 case "name_desc":
                     return await PaginatedList<RandomDecisionItem>
                                     .CreateAsync(decisions
@@ -60,10 +64,18 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
                     return await PaginatedList<RandomDecisionItem>
                                     .CreateAsync(decisions
                                                     .OrderByDescending(s => s.CreatedAt), pageNumber ?? 1, pageSize);
+                case "updated":
+                    return await PaginatedList<RandomDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderBy(s => s.UpdatedAt), pageNumber ?? 1, pageSize);
+                case "updated_desc":
+                    return await PaginatedList<RandomDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderByDescending(s => s.UpdatedAt), pageNumber ?? 1, pageSize);
                 default:
                     return await PaginatedList<RandomDecisionItem>
                             .CreateAsync(decisions
-                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
+                                            .OrderByDescending(s => s.UpdatedAt), pageNumber ?? 1, pageSize);
             }
         }
 
