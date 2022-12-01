@@ -107,7 +107,10 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
             foreach (var item in conditionalInputItem.ConditionalInputs)
             {
                 item.ForeignId = conditionalInputItem.Id;
+                item.Include.Clear();
+                item.Exclude.Clear();
                 _context.ConditionalInputs.Add(item);
+                
             }
 
             await _context.SaveChangesAsync();
