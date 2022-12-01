@@ -12,8 +12,8 @@ public class ConditionalDecisionContext : DbContext
     public DbSet<ConditionalDecisionItem> ConditionalDecisionItems { get; set; } = null!; 
 
     public DbSet<Condition> Conditions { get; set; } = null!;
-    public DbSet<InnerItem> Include { get; set; } = null!;
-    public DbSet<InnerItem> Exclude { get; set; } = null!;
+    public DbSet<IncludeItem> Include { get; set; } = null!;
+    public DbSet<ExcludeItem> Exclude { get; set; } = null!;
 
     public DbSet<Choice> Choices { get; set; } = null!;
 
@@ -52,11 +52,11 @@ public class ConditionalDecisionContext : DbContext
         modelBuilder.Entity<ConditionalInput>()
             .HasMany(d => d.Include)
             .WithOne()
-            .HasForeignKey(i => i.ConditionId);
+            .HasForeignKey(i => i.ConditionIdInclude);
         
         modelBuilder.Entity<ConditionalInput>()
             .HasMany(d => d.Exclude)
             .WithOne()
-            .HasForeignKey(i => i.ConditionId);
+            .HasForeignKey(i => i.ConditionIdExclude);
     }
 } 
