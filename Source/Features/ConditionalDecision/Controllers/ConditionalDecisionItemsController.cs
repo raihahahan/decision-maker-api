@@ -35,8 +35,27 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
                         .Include(ti => ti.Conditions)
                         .ThenInclude(thenTi => thenTi.Exclude);
 
+        if (!String.IsNullOrEmpty(q) && q.Trim() != "") {
+                decisions = decisions
+                        .Where(i => i.Name
+                                    .Trim()
+                                    .ToLower()
+                                    .Contains(q
+                                                .Trim()
+                                                .ToLower()))
+                        .Include(ti => ti.Choices)
+                        .Include(ti => ti.Conditions)
+                        .ThenInclude(thenTi => thenTi.Include)
+                        .Include(ti => ti.Conditions)
+                        .ThenInclude(thenTi => thenTi.Exclude);
+            } 
+
           switch (sortorder)
             {
+                case "name":
+                    return await PaginatedList<ConditionalDecisionItem>
+                            .CreateAsync(decisions
+                                            .OrderBy(s => s.Name), pageNumber ?? 1, pageSize);
                 case "name_desc":
                     return await PaginatedList<ConditionalDecisionItem>
                             .CreateAsync(decisions
@@ -49,6 +68,14 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
                     return await PaginatedList<ConditionalDecisionItem>
                             .CreateAsync(decisions
                                             .OrderByDescending(s => s.CreatedAt), pageNumber ?? 1, pageSize);
+                case "updated":
+                    return await PaginatedList<ConditionalDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderBy(s => s.UpdatedAt), pageNumber ?? 1, pageSize);
+                case "updated_desc":
+                    return await PaginatedList<ConditionalDecisionItem>
+                                    .CreateAsync(decisions
+                                                    .OrderByDescending(s => s.UpdatedAt), pageNumber ?? 1, pageSize);
                 default:
                     return await PaginatedList<ConditionalDecisionItem>
                             .CreateAsync(decisions
@@ -110,7 +137,7 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
             {
                 return BadRequest();
             }
-            conditionalDecisionItem.UpdatedAt = new DateTime();
+           
             _context.Entry(conditionalDecisionItem).State = EntityState.Modified;
 
             try
@@ -153,11 +180,17 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
                 _context.Conditions.Add(item);
                 foreach (var _include in item.Include)
                 {
-                    _context.Include.Add(_include);
+                    if (_include.Type.Equals("include"))
+                    {
+                        _context.Include.Add(_include);
+                    }
                 }
                 foreach (var _exclude in item.Exclude)
                 {
-                    _context.Exclude.Add(_exclude);
+                    if (_exclude.Type.Equals("exclude"))
+                    {
+                        _context.Exclude.Add(_exclude);
+                    }
                 }
             }
             await _context.SaveChangesAsync();
@@ -217,6 +250,7 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
                 Choice? EntryChoice = conditionalDecisionItem.Value.Choices.Find(choice => choice.RefId != null ? choice.RefId.Equals(entry.Key) : false);
                 if (EntryChoice == null) return NotFound();
                 _FinalResult.Add(new WeightedResult(idIndex, EntryChoice.Id, entry.Value, EntryChoice.Name));
+                idIndex++;
             }
             _FinalResult = _FinalResult.OrderByDescending(o => o.TotalWeight).ToList();
 
