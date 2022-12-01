@@ -2,17 +2,17 @@ namespace DecisionMakerApi.Features.ConditionalDecision.Domains;
 
 public class Condition 
 {
-    private List<InnerItem> _include = new List<InnerItem>();
-    private List<InnerItem> _exclude = new List<InnerItem>();
+    private List<IncludeItem> _include = new List<IncludeItem>();
+    private List<ExcludeItem> _exclude = new List<ExcludeItem>();
 
     public long Id { get; set; }
     public string Name { get; set; } = null!;
-    public List<InnerItem> Include 
+    public List<IncludeItem> Include 
     {
         get { return _include; }
         set { _include = value; }
     }
-    public List<InnerItem> Exclude
+    public List<ExcludeItem> Exclude
     {
         get { return _exclude; }
         set { _exclude = value; }
