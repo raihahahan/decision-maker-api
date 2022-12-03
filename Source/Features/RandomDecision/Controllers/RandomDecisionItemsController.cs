@@ -18,10 +18,12 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
     public class RandomDecisionItemsController : ControllerBase
     {
         private readonly RandomDecisionContext _context;
+        private readonly ILogger _logger;
         private const int pageSize = 5;
-        public RandomDecisionItemsController(RandomDecisionContext context)
+        public RandomDecisionItemsController(RandomDecisionContext context, ILogger<RandomDecisionItemsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/RandomDecisionItems
@@ -176,7 +178,55 @@ namespace DecisionMakerApi.Source.Feautures.RandomDecision.Controllers
             {
                 return BadRequest();
             }
-            _context.Entry(randomDecisionItem).State = EntityState.Modified;
+
+            /*
+                1. get current existing decision item
+                2. for each choice in existing decision item, delete the choice if it does not exist in the new decision item.
+                3. for each choice in new decision item, add the choice if it does not currently exists.
+                4. else, update the choice.
+            */
+
+            var existingRandomDecisionItem = _context.RandomDecisionItems
+                                                .Include(i => i.Choices)
+                                                .FirstOrDefault(i => i.Id == id);
+            
+            if (existingRandomDecisionItem == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                // update non-nested fields
+                _context.Entry(existingRandomDecisionItem).CurrentValues.SetValues(randomDecisionItem);
+
+                 // add new choices and update edited choices
+                foreach (var choice in randomDecisionItem.Choices)
+                {
+                    var existingChoice = existingRandomDecisionItem.Choices
+                                            .FirstOrDefault(c => c.Id == choice.Id);
+
+                    if (existingChoice == null || choice.Id == 0)
+                    {
+                        existingRandomDecisionItem.Choices.Add(choice);
+                    }
+                    else
+                    {
+                        _context.Entry(existingChoice).CurrentValues.SetValues(choice);
+                    }
+                }
+
+                // delete choices in existing decision item that no longer exists
+                foreach (var choice in existingRandomDecisionItem.Choices)
+                {
+                    var checkIfDeletedChoice = randomDecisionItem.Choices
+                        .FirstOrDefault(c => c.Id == choice.Id);
+                    
+                    if (checkIfDeletedChoice == null)
+                    {
+                        _context.Choices.Remove(choice);
+                    }
+                }
+            }
 
             try
             {
