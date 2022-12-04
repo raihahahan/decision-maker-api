@@ -238,8 +238,12 @@ namespace DecisionMakerApi.Source.Features.ConditionalDecision.Controllers
             conditionalInput.ForEach(c => {
                 if (c.Value)
                 {
-                    c.Include.ForEach(inc => PointDict[inc.ChoiceId]++);
-                    c.Exclude.ForEach(exc => PointDict[exc.ChoiceId]--);
+                    c.Include.ForEach(inc => {
+                        if (PointDict.ContainsKey(inc.ChoiceId)) PointDict[inc.ChoiceId]++;
+                    });
+                    c.Exclude.ForEach(exc => {
+                        if (PointDict.ContainsKey(exc.ChoiceId)) PointDict[exc.ChoiceId]--;
+                    });
                 }
             });
 
