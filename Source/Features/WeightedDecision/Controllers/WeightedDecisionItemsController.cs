@@ -12,10 +12,12 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
     public class WeightedDecisionItemsController : ControllerBase
     {
         private readonly WeightedDecisionContext _context;
+        private readonly ILogger _logger;
         private const int pageSize = 5;
-        public WeightedDecisionItemsController(WeightedDecisionContext context)
+        public WeightedDecisionItemsController(WeightedDecisionContext context, ILogger<WeightedDecisionItemsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/WeightedDecisionItems
@@ -148,10 +150,195 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
         {
             if (id != weightedDecisionItem.Id)
             {
+                _logger.LogError("0: id != weightedDecisionItem.Id");
                 return BadRequest();
             }
-    
-            _context.Entry(weightedDecisionItem).State = EntityState.Modified;
+
+            var existingWeightedDecisionItem = _context.WeightedDecisionItems
+                .Include(ti => ti.Choices)
+                .Include(ti => ti.CriteriaList)
+                .FirstOrDefault(i => i.Id == id);
+
+            if (existingWeightedDecisionItem == null)
+            {
+                return NotFound();
+            }
+            else 
+            {   
+                 // update non-nested fields
+                _context.Entry(existingWeightedDecisionItem).CurrentValues.SetValues(weightedDecisionItem);
+
+                // HANDLE NESTED FIELDS
+
+                // CHOICES
+
+                // add new choices and update edited choices
+                foreach (var choice in weightedDecisionItem.Choices)
+                {
+                    var existingChoice = existingWeightedDecisionItem.Choices
+                                            .FirstOrDefault(c => c.Id == choice.Id);
+
+                    if (existingChoice == null || choice.Id == 0)
+                    {
+                        _logger.LogInformation("ADD CHOICE");
+                        choice.DecisionId = id;
+                        _context.Choices.Add(choice);
+                        _context.SaveChanges();
+
+                        var newChoice = choice;
+                        
+                        var criteriaInputToAdd = new List<CriteriaInput>();
+                        
+                        var criteriasRef = _context.Criterias.Where(i => i.DecisionId == id).ToList();
+
+                        foreach (var item in criteriasRef)
+                        {
+                            var newCriteriaInput = new CriteriaInput
+                            {
+                                Name = item.Name,
+                                Weight = item.Weight,
+                                DecisionId = -1,
+                                value = 20,
+                                CriteriaId = item.Id
+                            };
+                            
+                            criteriaInputToAdd.Add(newCriteriaInput);
+                        }
+                        
+
+                        _logger.LogInformation("LENTHH: {length}", criteriaInputToAdd.Count);
+
+                        var newWeightedInput = new WeightedInput
+                            {
+                                ChoiceId = newChoice.Id,
+                                ChoiceName = newChoice.Name,
+                                ForeignId = id,
+                                CriteriaInput = criteriaInputToAdd
+                                
+                            };
+
+
+                        _context.WeightedInputs.Add(newWeightedInput);
+                        _context.SaveChanges();
+
+                    }
+                    else
+                    {
+                        _logger.LogInformation("UPDATE CHOICE {name}", choice.Name);
+                        _context.Entry(existingChoice).CurrentValues.SetValues(choice);
+                    }
+                }
+
+                // delete choices in existing decision item that no longer exists
+                foreach (var choice in existingWeightedDecisionItem.Choices)
+                {
+                    var checkIfDeletedChoice = weightedDecisionItem.Choices
+                        .FirstOrDefault(c => c.Id == choice.Id);
+                    
+                    if (checkIfDeletedChoice == null)
+                    {
+                        _logger.LogInformation("DELETE CHOICE {name}", choice.Name);
+                        _context.Choices.Remove(choice);
+                        var weightedInput = await _context.WeightedInputs.ToListAsync();
+                        var toDelete = weightedInput.Find(i => i.ChoiceId == choice.Id);
+                        if (toDelete == null)
+                        {
+                            return NotFound();
+                        }
+                        _context.WeightedInputs.Remove(toDelete);
+                    }
+                }
+            }
+
+            // CRITERIA LIST
+
+            // add new criteria and update edited criteria and criteriaInput
+            foreach (var criteria in weightedDecisionItem.CriteriaList)
+            {
+                var existingCriteria = existingWeightedDecisionItem.CriteriaList
+                                        .FirstOrDefault(c => c.Id == criteria.Id);
+                if (existingCriteria == null || criteria.Id == 0)
+                {
+                    // add criteria
+                   
+                    var weightedInputItems = _context.WeightedInputItems.Include(i => i.WeightedInputs).FirstOrDefault(i => i.WeightedItemId == id);
+
+                    if (weightedInputItems == null || weightedInputItems.WeightedInputs == null)
+                    {
+                        _logger.LogError("3: weightedInputItems == null");
+                        return BadRequest();
+                    }
+                    criteria.DecisionId = id;
+                    _context.Criterias.Add(criteria);
+                    _context.SaveChanges();
+
+                    var postedCriteria = criteria;
+
+                    foreach (var item in weightedInputItems.WeightedInputs)
+                    {
+                        var newCriteriaInput = new CriteriaInput
+                        {
+                            Name = criteria.Name,
+                            Weight = criteria.Weight,
+                            DecisionId = -1,
+                            CriteriaId = postedCriteria.Id,
+                            InputId = item.Id,
+                            value = 20
+                        };
+                        _context.CriteriaInputs.Add(newCriteriaInput);
+                    }               
+                }
+                else
+                {
+                    _context.Entry(existingCriteria).CurrentValues.SetValues(criteria);
+
+                    // Update Weighted Input
+                    var criteriaInputs = await _context.CriteriaInputs.ToListAsync();
+
+                    var editedCriteriaInput = new CriteriaInput
+                    {
+                        CriteriaId = criteria.Id,
+                        Name = criteria.Name,
+                        Weight = criteria.Weight,
+                        DecisionId = criteria.DecisionId,
+                        value = 23,                        
+                    };
+
+                    var toEdit = criteriaInputs.Where(i => i.CriteriaId == criteria.Id);
+
+                    foreach (var item in toEdit)
+                    {
+                        item.Name = editedCriteriaInput.Name;
+                        item.Weight =  editedCriteriaInput.Weight;      
+                    }
+
+                    _context.CriteriaInputs.UpdateRange(toEdit);
+                }
+                _context.SaveChanges();
+            }
+
+            // delete criteria in existing decision item that no longer exists
+
+            foreach (var criteria in existingWeightedDecisionItem.CriteriaList)
+            {
+                var checkIfDeletedCriteria = weightedDecisionItem.CriteriaList
+                    .FirstOrDefault(c => c.Id == criteria.Id);
+                
+                if (checkIfDeletedCriteria == null)
+                {
+                    _context.Criterias.Remove(criteria);
+                    var criteriaInput = await _context.CriteriaInputs.ToListAsync();
+                    var toDelete = criteriaInput.Where(i => i.CriteriaId == criteria.Id);
+                    if (toDelete == null)
+                    {
+                        return NotFound();
+                    }
+
+                    _context.CriteriaInputs.RemoveRange(toDelete);
+                }
+            }
+
+            // _context.Entry(weightedDecisionItem).State = EntityState.Modified;
 
             try
             {
