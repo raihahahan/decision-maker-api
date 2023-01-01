@@ -14,10 +14,12 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
     public class WeightedInputItemsController : ControllerBase
     {
         private readonly WeightedDecisionContext _context;
+        private readonly ILogger<WeightedInputItemsController> _logger;
 
-        public WeightedInputItemsController(WeightedDecisionContext context)
+        public WeightedInputItemsController(WeightedDecisionContext context, ILogger<WeightedInputItemsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/WeightedInputItems
@@ -67,7 +69,25 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(weightedInputItem).State = EntityState.Modified;
+            foreach (var newWeightedInput in weightedInputItem.WeightedInputs)
+            {
+                var newCriteriaInputs = newWeightedInput.CriteriaInput;
+
+                foreach (var newCriteriaInput in newCriteriaInputs)
+                {
+                    var existingCriteriaInput = _context.CriteriaInputs.Find(newCriteriaInput.Id);
+                    
+                    if (existingCriteriaInput == null)
+                    {
+                        return BadRequest();
+                    }
+                    if (existingCriteriaInput.value != newCriteriaInput.value) 
+                    {
+                        existingCriteriaInput.value = newCriteriaInput.value;   
+                        _context.Entry(existingCriteriaInput).State = EntityState.Modified;
+                    }
+                }
+            }
 
             try
             {
