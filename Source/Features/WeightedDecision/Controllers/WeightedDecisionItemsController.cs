@@ -226,6 +226,13 @@ namespace DecisionMakerApi.Source.Features.WeightedDecision.Controllers
                     {
                         _logger.LogInformation("UPDATE CHOICE {name}", choice.Name);
                         _context.Entry(existingChoice).CurrentValues.SetValues(choice);
+                        var weightedInput = _context.WeightedInputs.Where(i => i.ChoiceId == choice.Id).FirstOrDefault();
+                        
+                        if (weightedInput != null) 
+                        {
+                            weightedInput.ChoiceName = choice.Name;
+                            _context.Entry(weightedInput).State = EntityState.Modified;
+                        }
                     }
                 }
 
