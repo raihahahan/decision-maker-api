@@ -34,7 +34,7 @@
 <h3 align="center">Decision Maker Web API</h3>
 
   <p align="center">
-    An .Net 6 Web API project to help you make decisions.
+    A .Net 6 Web API project to help you make decisions.
     <br />
     <a href="https://github.com/raihahahan/decision-maker-api"><strong>Explore the docs »</strong></a>
     <br />
