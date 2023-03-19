@@ -80,6 +80,8 @@
 
 Decision Maker API is a Web API created with .Net 6. It contains features such as CRUD, pagination, sorting and filtering. This is my first .Net project and is still incomplete.
 
+Go to https://github.com/raihahahan/decision-maker-nextjs-client to see an example of a web client for this Web API. You are free to make use of this API for your own client.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Features and Endpoints
