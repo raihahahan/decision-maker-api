@@ -80,12 +80,12 @@
 
 [![Product Name Screen Shot][product-screenshot]](https://example.com)
 
-Decision Maker API is a Web API created with ASP.NET. It contains features such as CRUD, authentication, search, pagination, filters and more.
+Decision Maker API is a Web API created with .Net 6. It contains features such as CRUD, pagination, sorting and filtering. This is my first .Net project and is still incomplete.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ### Features and Endpoints
-- For a much clearer overview of the schema and endpoints, go to https://localhost:7239/swagger/index.html.
+- For a much clearer overview of the schema and endpoints, go to https://localhost:{port}/swagger/index.html.
 
 #### Random Decision
 - From a list of choices, randomly return a decision.
@@ -113,7 +113,7 @@ DELETE /api/WeightedDecisionItems/{id}
 POST /api/WeightedDecisionItems/{id}/decide
 ```
 
-#### Conditional Decision
+#### Conditional Decision (IN PROGRESS)
 - From a list of choices, provide a list of conditions affecting your choice.
 - For example, for a list of commuting method (e.g. bicycle, public transport, private transport), some conditions may be "Rainy weather", "Must report to work earlier" etc. And for each condition, there are two lists, `include` and `exclude`, each containing a list of choices to include and exclude respectively if the given condition is true.
 
