@@ -78,8 +78,6 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
 Decision Maker API is a Web API created with .Net 6. It contains features such as CRUD, pagination, sorting and filtering. This is my first .Net project and is still incomplete.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
